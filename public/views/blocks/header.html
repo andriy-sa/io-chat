@@ -1,0 +1,17 @@
+<div id="header">
+    <div class="container">
+        <div class="text-right">
+            User
+        </div>
+    </div>
+</div>
+<div id="log">
+    <div class="container">
+        <div ng-show="$root.log" class="alert alert-{{ $root.log }}" role="alert">
+            <button ng-click="$root.log=false" type="button" class="close" aria-label="Close"><span>×</span></button>
+            <div ng-repeat="msg in messages">
+                {{ msg }}
+            </div>
+        </div>
+    </div>
+</div>

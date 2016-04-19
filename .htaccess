@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+
+	RemoveHandler .php
+	AddType php56cgi .php
+
+    RewriteEngine On
+
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
