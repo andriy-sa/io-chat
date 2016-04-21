@@ -2,7 +2,7 @@ module.exports = function(ngApp) {
     ngApp.controller('mainCtrl',['$scope','Chat','Socket', function ($scope,Chat,Socket) {
         $scope.user = [];
 
-        $scope.users = [];
+        $scope.users = {};
         $scope.messages = [];
 
         $scope.newMsg = '';
@@ -37,33 +37,39 @@ module.exports = function(ngApp) {
         /* socket listeners */
 
         Socket.on('users',function(data){
-           console.log('get users request '+data);
+           console.log('get users request ',data);
            $scope.users = data;
         });
 
         Socket.on('add_user',function(data){
-           console.log('new User '+data);
-           $scope.users.push(data);
-           $scope.messages.push({
-               'message' : data.name+' has entered the chat!',
-               'name'    : '*'
-           })
+            var add_index = $scope.users.indexOf(data);
+            if(add_index === -1){
+                $scope.users.push(data);
+                $scope.messages.push({
+                    'message' : data.name+' has entered the chat!',
+                    'name'    : ''
+                });
+            }
+
         });
 
         Socket.on('remove_user',function(data){
-            conxole.log('user leave chat '+data);
-            $scope.users.splice($scope.users.indexOf(data),1);
-            $scope.messages.push({
-                'message' : data.name+' has leave the chat!',
-                'name'    : '*'
-            })
+            angular.forEach($scope.users,function(val,key){
+               if(val.id == data.id){
+                   $scope.users.splice(key,1);
+                   $scope.messages.push({
+                       'message' : data.name+' has leave the chat!',
+                       'name'    : ''
+                   })
+               }
+            });
         });
 
         Socket.on('message',function(data){
            $scope.messages.push(data);
         });
 
-        $scope.$on('$locationChangeStart',function(event){
+        $scope.$on('$stateChangeStart',function(event){
            Socket.disconnect(true);
         });
     }]);

@@ -2,7 +2,7 @@
     <div class="col-xs-8 chat">
         <ul>
             <li ng-repeat="msg in messages track by $index">
-                <span>{{ msg.name == user.name ? 'me' : user.name }}</span>
+                <span>{{ msg.name == user.name ? 'me' : msg.name }}</span>
                 {{ msg.message }}
             </li>
         </ul>
