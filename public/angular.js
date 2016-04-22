@@ -49,6 +49,7 @@
 
 	const ngApp = angular.module('ngApp', ['ui.router', 'btford.socket-io']);
 	__webpack_require__(4)(ngApp);
+	__webpack_require__(17)(ngApp);
 	__webpack_require__(6)(ngApp);
 	__webpack_require__(9)(ngApp);
 	__webpack_require__(13)(ngApp);
@@ -18684,7 +18685,7 @@
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
-	    ngApp.controller('mainCtrl', ['$scope', 'Chat', 'Socket', function ($scope, Chat, Socket) {
+	    ngApp.controller('mainCtrl', ['$scope', '$filter', 'Chat', 'Socket', function ($scope, $filter, Chat, Socket) {
 	        $scope.user = [];
 
 	        $scope.users = {};
@@ -18726,7 +18727,7 @@
 	        });
 
 	        Socket.on('add_user', function (data) {
-	            var add_index = $scope.users.indexOf(data);
+	            var add_index = $filter('myIndexOf')($scope.users, data);
 	            if (add_index === -1) {
 	                $scope.users.push(data);
 	                $scope.messages.push({
@@ -18737,16 +18738,14 @@
 	        });
 
 	        Socket.on('remove_user', function (data) {
-	            angular.forEach($scope.users, function (val, key) {
-	                console.log(val.id + '----' + data.id);
-	                if (val.id == data.id) {
-	                    $scope.users.splice(key, 1);
-	                    $scope.messages.push({
-	                        'message': data.name + ' has leave the chat!',
-	                        'name': ''
-	                    });
-	                }
-	            });
+	            var delete_index = $filter('myIndexOf')($scope.users, data);
+	            if (delete_index != -1) {
+	                $scope.users.splice(delete_index, 1);
+	                $scope.messages.push({
+	                    'message': data.name + ' has leave the chat!',
+	                    'name': ''
+	                });
+	            }
 	        });
 
 	        Socket.on('message', function (data) {
@@ -18808,6 +18807,43 @@
 	        };
 	        $scope.getMe();
 	    }]);
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(18)(ngApp);
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.filter('myDateFormat', function myDateFormat($filter) {
+	        return function (text, format) {
+	            var tempdate = new Date(text.replace(/-/g, "/"));
+	            return $filter('date')(tempdate, format);
+	        };
+	    });
+
+	    ngApp.filter('myIndexOf', function () {
+	        return function (array, value, column) {
+	            if (column == undefined) {
+	                column = 'id';
+	            }
+	            var length = array.length;
+	            for (var i = length - 1; i >= 0; i--) {
+	                if (array[i][column] == value[column]) {
+	                    return i;
+	                }
+	            }
+
+	            return -1;
+	        };
+	    });
 	};
 
 /***/ }

@@ -1,5 +1,5 @@
 module.exports = function(ngApp) {
-    ngApp.controller('mainCtrl',['$scope','Chat','Socket', function ($scope,Chat,Socket) {
+    ngApp.controller('mainCtrl',['$scope','$filter','Chat','Socket', function ($scope,$filter,Chat,Socket) {
         $scope.user = [];
 
         $scope.users = {};
@@ -42,7 +42,7 @@ module.exports = function(ngApp) {
         });
 
         Socket.on('add_user',function(data){
-            var add_index = $scope.users.indexOf(data);
+            var add_index = $filter('myIndexOf')($scope.users,data);
             if(add_index === -1){
                 $scope.users.push(data);
                 $scope.messages.push({
@@ -54,15 +54,14 @@ module.exports = function(ngApp) {
         });
 
         Socket.on('remove_user',function(data){
-            angular.forEach($scope.users,function(val,key){
-               if(val.id == data.id){
-                   $scope.users.splice(key,1);
-                   $scope.messages.push({
-                       'message' : data.name+' has leave the chat!',
-                       'name'    : ''
-                   })
-               }
-            });
+            var delete_index = $filter('myIndexOf')($scope.users,data);
+            if(delete_index != -1){
+                $scope.users.splice(delete_index,1);
+                $scope.messages.push({
+                    'message' : data.name+' has leave the chat!',
+                    'name'    : ''
+                });
+            }
         });
 
         Socket.on('message',function(data){

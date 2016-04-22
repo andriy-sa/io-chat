@@ -6,6 +6,7 @@ const ngApp = angular.module('ngApp',[
     'btford.socket-io'
 ]);
 require('./directives')(ngApp);
+require('./filters')(ngApp);
 require('./config')(ngApp);
 require('./services')(ngApp);
 require('./controllers')(ngApp);
