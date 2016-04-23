@@ -31,5 +31,9 @@ Route::group(['middleware' => 'web'], function () {
     Route::get('api/check-guest',['middleware' => 'guest','uses' => function(){
         return response('success',200);
     }]);
+    Route::get('api/get_me','AngularController@getUser');
     Route::post('login','Auth\AuthController@login');
+    Route::post('reg','Auth\AuthController@register');
+
+    Route::get('logout','Auth\AuthController@logout');
 });

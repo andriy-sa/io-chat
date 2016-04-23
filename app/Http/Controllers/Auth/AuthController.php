@@ -103,4 +103,27 @@ class AuthController extends Controller
             'messages' => [$this->getFailedLoginMessage()]
         ],400);
     }
+
+    public function register(Request $request)
+    {
+        $validator = $this->validator($request->all());
+
+        if ($validator->fails()) {
+            return response()->json([
+                'type'   => 'danger',
+                'messages' => $validator->messages()->all(),
+            ],400);
+        }
+
+        Auth::guard($this->getGuard())->login($this->create($request->all()));
+
+        return response('success',200);
+    }
+
+    public function logout()
+    {
+        Auth::guard($this->getGuard())->logout();
+
+        return response('success',200);
+    }
 }

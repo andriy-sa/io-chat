@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/angular.loc.iml" filepath="$PROJECT_DIR$/.idea/angular.loc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/io-chat.loc.iml" filepath="$PROJECT_DIR$/.idea/io-chat.loc.iml" />
     </modules>
   </component>
 </project>

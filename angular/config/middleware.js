@@ -5,7 +5,10 @@ module.exports = function(ngApp) {
           return {
               responseError: function(response) {
                   if (response.status === 401) {
-                      $injector.get("$state").go("auth");
+                      $injector.get("$state").go("app.auth");
+                  }
+                  if (response.status === 402){
+                      $injector.get("$state").go("app.home");
                   }
                   return $q.reject(response);
               }
@@ -25,5 +28,18 @@ module.exports = function(ngApp) {
               }
           };
       });
-  })
+  });
+  ngApp.run(function($rootScope, $state, Auth,Chat){
+      $rootScope.$on("$stateChangeStart", function(event, toState) {
+          if (toState.data && toState.data.auth) {
+             //   console.log('auth detected');
+                Chat.getUser();
+          }
+          if (toState.data && toState.data.guest) {
+            //  console.log('guest detected');
+              Auth.checkAuth();
+          }
+      });
+  });
+
 };

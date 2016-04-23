@@ -1,7 +1,12 @@
 <div id="header">
     <div class="container">
-        <div class="text-right">
-            User
+        <div ng-if="me.id" class="text-right">
+            <span>Hello</span><span>{{ me.name }}</span>
+            <a ng-click="logout()" href=''>Logout</a>
+        </div>
+        <div ng-if="!me.id" class="text-right">
+            <a ui-sref="app.register"  href="">Register</a>
+            <a ui-sref="app.auth" href="">Login</a>
         </div>
     </div>
 </div>

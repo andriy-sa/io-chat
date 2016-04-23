@@ -7,28 +7,43 @@ module.exports = function(ngApp) {
         //
         // Now set up the states
         $stateProvider
-            .state('home', {
-                url: "/",
+            .state('app', {
+                abstract: true,
                 views: {
-                    "header"  : {
-                        templateUrl :'/views/blocks/header.html'
-
+                    "header": {
+                        templateUrl :'/views/blocks/header.html',
+                        controller  : "headerCtrl"
                     },
-                    "content" : {
+                    "content": {}
+                }
+            })
+            .state('app.home', {
+                url: "/",
+                data : {'auth' : true},
+                views: {
+                    "content@" : {
                         templateUrl : '/views/home.html',
                         controller: "mainCtrl"
                     }
                 }
             })
-            .state('auth', {
+            .state('app.auth', {
+                data : {'guest' : true},
                 url: "/auth",
                 views: {
-                    "header": {
-                        templateUrl: '/views/blocks/header.html'
-
-                    },
-                    "content": {
+                    "content@": {
                         templateUrl: '/views/auth.html',
+                        controller: "authCtrl"
+                    }
+                }
+
+            })
+            .state('app.register', {
+                data : {'guest' : true},
+                url: "/register",
+                views: {
+                    "content@": {
+                        templateUrl: '/views/register.html',
                         controller: "authCtrl"
                     }
                 }

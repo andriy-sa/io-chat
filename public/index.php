@@ -1,5 +1,7 @@
 <?php
-
+error_reporting(-1);
+ini_set("display_errors", "on");
+ini_set("display_startup_errors", "on");
 /**
  * Laravel - A PHP Framework For Web Artisans
  *

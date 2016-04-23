@@ -12,6 +12,6 @@ class AngularController extends Controller
 {
     public function getUser(Request $request)
     {
-        return $request->user();
+        return response()->json(['user'=>$request->user()],200);
     }
 }
