@@ -3,7 +3,8 @@ require('angular-ui-router');
 
 const ngApp = angular.module('ngApp',[
     'ui.router',
-    'btford.socket-io'
+    'btford.socket-io',
+    'localytics.directives'
 ]);
 require('./directives')(ngApp);
 require('./filters')(ngApp);

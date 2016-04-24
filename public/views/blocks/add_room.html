@@ -1,0 +1,16 @@
+<div class="modal fade" id="addRoom" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Create Chat Room</h4>
+            </div>
+            <div class="modal-body text-center">
+                <div class="form-group">
+                    <input id="newRoom" class="form-control" type="text" placeholder="Room Name" ng-model="newRoom.name">
+                </div>
+                <button ng-click="addRoom(newRoom)" class="btn btn-success">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
