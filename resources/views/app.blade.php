@@ -13,7 +13,8 @@
 
     <!-- Styles -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/main.css" rel="stylesheet">
+    <link href="{{ url('/css/chosen.min.css') }}" rel="stylesheet">
+    <link href="{{ url('/css/main.css') }}" rel="stylesheet">
 </head>
 <body ng-cloak ng-app="ngApp">
     <div ui-view="header" id="top"></div>
@@ -22,6 +23,8 @@
     <!-- JavaScripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="{{ url('/js/chosen.jquery.min.js') }}"></script>
+
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
     <script src="/angular.js"></script>
 </body>

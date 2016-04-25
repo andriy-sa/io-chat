@@ -1,5 +1,17 @@
 <div class="row">
-    <div class="col-xs-8 chat">
+    <div class="col-xs-3 rooms">
+        <button data-toggle="modal" data-target="#addRoom" class="btn btn-info">Add chat room</button>
+        <button ng-if="user.id == room.creator_id" ng-click="showAddUserModal()" class="btn btn-warning">Add user to room</button>
+        <ul>
+            <li ng-click="changeRoom(0)">
+                Home
+            </li>
+            <li ng-repeat="rm in rooms track by $index" ng-click="changeRoom(rm.id)">
+                {{ rm.name }}
+            </li>
+        </ul>
+    </div>
+    <div class="col-xs-6 chat">
         <ul>
             <li ng-repeat="msg in messages track by $index">
                 <span>{{ msg.name == user.name ? 'me' : msg.name }}</span>
@@ -12,7 +24,7 @@
             </div>
         </form>
     </div>
-    <div class="col-xs-4">
+    <div class="col-xs-3 users">
         <ul>
             <li ng-repeat="user in users track by $index">
                 {{ user.name }}
@@ -20,3 +32,5 @@
         </ul>
     </div>
 </div>
+<ng-include src="'/views/blocks/add_room.html'"></ng-include>
+<ng-include src="'/views/blocks/add_user.html'"></ng-include>

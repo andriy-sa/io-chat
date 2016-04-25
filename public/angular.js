@@ -47,12 +47,12 @@
 	const angular = __webpack_require__(1);
 	__webpack_require__(3);
 
-	const ngApp = angular.module('ngApp', ['ui.router', 'btford.socket-io']);
+	const ngApp = angular.module('ngApp', ['ui.router', 'btford.socket-io', 'localytics.directives']);
 	__webpack_require__(4)(ngApp);
-	__webpack_require__(17)(ngApp);
 	__webpack_require__(6)(ngApp);
-	__webpack_require__(9)(ngApp);
-	__webpack_require__(13)(ngApp);
+	__webpack_require__(8)(ngApp);
+	__webpack_require__(11)(ngApp);
+	__webpack_require__(15)(ngApp);
 
 /***/ },
 /* 1 */
@@ -18359,6 +18359,7 @@
 
 	module.exports = function (ngApp) {
 	    __webpack_require__(5)(ngApp);
+	    __webpack_require__(19)(ngApp);
 	};
 
 /***/ },
@@ -18476,11 +18477,48 @@
 
 	module.exports = function (ngApp) {
 	    __webpack_require__(7)(ngApp);
-	    __webpack_require__(8)(ngApp);
 	};
 
 /***/ },
 /* 7 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.filter('myDateFormat', function myDateFormat($filter) {
+	        return function (text, format) {
+	            var tempdate = new Date(text.replace(/-/g, "/"));
+	            return $filter('date')(tempdate, format);
+	        };
+	    });
+
+	    ngApp.filter('myIndexOf', function () {
+	        return function (array, value, column) {
+	            if (column == undefined) {
+	                column = 'id';
+	            }
+	            var length = array.length;
+	            for (var i = length - 1; i >= 0; i--) {
+	                if (array[i][column] == value[column]) {
+	                    return i;
+	                }
+	            }
+
+	            return -1;
+	        };
+	    });
+	};
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(9)(ngApp);
+	    __webpack_require__(10)(ngApp);
+	};
+
+/***/ },
+/* 9 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18534,7 +18572,7 @@
 	};
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18582,17 +18620,17 @@
 	};
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function (ngApp) {
-	    __webpack_require__(10)(ngApp);
-	    __webpack_require__(11)(ngApp);
 	    __webpack_require__(12)(ngApp);
+	    __webpack_require__(13)(ngApp);
+	    __webpack_require__(14)(ngApp);
 	};
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18603,13 +18641,54 @@
 	                    method: 'GET',
 	                    'url': '/api/get_user'
 	                });
+	            },
+	            getMessages: function (room_id) {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/get_messages',
+	                    params: { 'room_id': room_id }
+	                });
+	            },
+	            getRooms: function () {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/get_rooms'
+	                });
+	            },
+	            findRoom: function (id) {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/find_room',
+	                    params: { 'id': id }
+	                });
+	            },
+	            newRoom: function (name, user_id) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/api/new_room',
+	                    data: {
+	                        'name': name,
+	                        'creator_id': user_id
+	                    }
+	                });
+	            },
+	            newMessage: function (user_id, message, room_id) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/api/new_message',
+	                    data: {
+	                        'message': message,
+	                        'user_id': user_id,
+	                        'room_id': room_id
+	                    }
+	                });
 	            }
 	        };
 	    });
 	};
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18661,7 +18740,7 @@
 	};
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18671,43 +18750,112 @@
 	};
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function (ngApp) {
-	    __webpack_require__(14)(ngApp);
-	    __webpack_require__(15)(ngApp);
 	    __webpack_require__(16)(ngApp);
+	    __webpack_require__(17)(ngApp);
+	    __webpack_require__(18)(ngApp);
 	};
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
-	    ngApp.controller('mainCtrl', ['$scope', '$filter', 'Chat', 'Socket', function ($scope, $filter, Chat, Socket) {
+	    ngApp.controller('mainCtrl', ['$scope', '$filter', '$timeout', 'Chat', 'Socket', function ($scope, $filter, $timeout, Chat, Socket) {
 	        $scope.user = [];
-
-	        $scope.users = {};
+	        $scope.room = {
+	            'id': 0
+	        };
 	        $scope.messages = [];
+	        $scope.rooms = [];
 
 	        $scope.newMsg = '';
+	        $scope.newRoom = [];
+
+	        $scope.all_users = [];
+	        $scope.users = [];
+	        $scope.chosenUsers = [];
+	        $scope.db_users = [];
 
 	        $scope.sendMsg = function (msg) {
 	            if (msg != null && msg.trim() != '') {
 	                var message = {
 	                    'name': $scope.user.name,
-	                    'message': msg
+	                    'message': msg,
+	                    'created_at': $filter('date')(new Date(), "yyyy-MM-dd HH:mm:ss")
 	                };
 
 	                Socket.emit('message', message);
-
+	                Chat.newMessage($scope.user.id, msg, $scope.room_id);
 	                $scope.messages.push(message);
 	                $scope.newMsg = '';
 	            }
 	        };
 
-	        console.log('in chat controller');
+	        $scope.getMessages = function () {
+	            Chat.getMessages($scope.room.id).success(function (data) {
+	                $scope.messages = data;
+	            });
+	        };
+
+	        $scope.getRooms = function () {
+	            Chat.getRooms().success(function (data) {
+	                $scope.rooms = data;
+	            });
+	        };
+
+	        $scope.addRoom = function (room) {
+	            if (!room.name || room.name.trim() == '') {
+	                var input = $('input#newRoom');
+	                input.css('border-color', 'red');
+	                $timeout(function () {
+	                    input.css('border-color', '#ccc');
+	                }, 3000);
+	                return false;
+	            }
+	            Chat.newRoom(room.name, $scope.user.id).success(function (data) {
+	                $scope.rooms.push(data);
+	                $scope.changeRoom(data.id);
+	                $('addRoom').modal('close');
+	            });
+	        };
+
+	        $scope.changeRoom = function (id) {
+	            if (id === $scope.room.id) {
+	                return false;
+	            }
+	            if (id === 0) {
+	                $scope.room = {
+	                    'id': 0
+	                };
+	                $scope.users = $scope.all_users;
+	                $scope.getMessages();
+	            } else {
+	                Chat.findRoom(id).success(function (data) {
+	                    $scope.room = data;
+	                    $scope.db_users = data.users;
+	                    $scope.users = [];
+	                    var index = -1;
+	                    angular.forEach($scope.db_users, function (item, key) {
+	                        index = $filter('myIndexOf')($scope.all_users, item);
+	                        // console.log($scope.all_users,item);
+	                        if (index != -1) {
+	                            $scope.users.push($scope.all_users[index]);
+	                        }
+	                    });
+	                    $scope.getMessages();
+	                }).error(function () {
+	                    console.log('room not found');
+	                });
+	            }
+	        };
+
+	        $scope.showAddUserModal = function () {
+	            $('#addUser').modal('show');
+	        };
 
 	        $scope.getUser = function () {
 	            Chat.getUser().success(function (data) {
@@ -18717,28 +18865,47 @@
 	                Socket.emit('request_users', {});
 	            });
 	        };
+	        $scope.getMessages();
+	        $scope.getRooms();
 	        $scope.getUser();
 
 	        /* socket listeners */
 
 	        Socket.on('users', function (data) {
-	            console.log('get users request ', data);
 	            $scope.users = data;
+	            $scope.all_users = data;
 	        });
 
 	        Socket.on('add_user', function (data) {
-	            var add_index = $filter('myIndexOf')($scope.users, data);
+	            var add_index = $filter('myIndexOf')($scope.all_users, data);
 	            if (add_index === -1) {
-	                $scope.users.push(data);
-	                $scope.messages.push({
-	                    'message': data.name + ' has entered the chat!',
-	                    'name': ''
-	                });
+	                $scope.all_users.push(data);
+	                if ($scope.room.id === 0) {
+	                    $scope.users.push(data);
+	                    $scope.messages.push({
+	                        'message': data.name + ' has entered the chat!',
+	                        'name': ''
+	                    });
+	                } else {
+	                    var db_index = $filter('myIndexOf')($scope.db_users, data);
+	                    if (db_index != -1) {
+	                        $scope.users.push(data);
+	                        $scope.messages.push({
+	                            'message': data.name + ' has entered the chat!',
+	                            'name': ''
+	                        });
+	                    }
+	                }
 	            }
 	        });
 
 	        Socket.on('remove_user', function (data) {
-	            var delete_index = $filter('myIndexOf')($scope.users, data);
+	            var delete_index = $filter('myIndexOf')($scope.all_users, data);
+	            if (delete_index != -1) {
+	                $scope.all_users.splice(delete_index, 1);
+	            }
+
+	            delete_index = $filter('myIndexOf')($scope.users, data);
 	            if (delete_index != -1) {
 	                $scope.users.splice(delete_index, 1);
 	                $scope.messages.push({
@@ -18759,7 +18926,7 @@
 	};
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18785,7 +18952,7 @@
 	};
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -18810,40 +18977,143 @@
 	};
 
 /***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function (ngApp) {
-	    __webpack_require__(18)(ngApp);
-	};
-
-/***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
-	    ngApp.filter('myDateFormat', function myDateFormat($filter) {
-	        return function (text, format) {
-	            var tempdate = new Date(text.replace(/-/g, "/"));
-	            return $filter('date')(tempdate, format);
-	        };
-	    });
+	  (function () {
+	    var indexOf = [].indexOf || function (item) {
+	      for (var i = 0, l = this.length; i < l; i++) {
+	        if (i in this && this[i] === item) return i;
+	      }
+	      return -1;
+	    };
 
-	    ngApp.filter('myIndexOf', function () {
-	        return function (array, value, column) {
-	            if (column == undefined) {
-	                column = 'id';
+	    angular.module('localytics.directives', []);
+
+	    angular.module('localytics.directives').directive('chosen', ['$timeout', function ($timeout) {
+	      var CHOSEN_OPTION_WHITELIST, NG_OPTIONS_REGEXP, isEmpty, snakeCase;
+	      NG_OPTIONS_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+group\s+by\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w]*)|(?:\(\s*([\$\w][\$\w]*)\s*,\s*([\$\w][\$\w]*)\s*\)))\s+in\s+([\s\S]+?)(?:\s+track\s+by\s+([\s\S]+?))?$/;
+	      CHOSEN_OPTION_WHITELIST = ['persistentCreateOption', 'createOptionText', 'createOption', 'skipNoResults', 'noResultsText', 'allowSingleDeselect', 'disableSearchThreshold', 'disableSearch', 'enableSplitWordSearch', 'inheritSelectClasses', 'maxSelectedOptions', 'placeholderTextMultiple', 'placeholderTextSingle', 'searchContains', 'singleBackstrokeDelete', 'displayDisabledOptions', 'displaySelectedOptions', 'width', 'includeGroupLabelInSelected', 'maxShownResults'];
+	      snakeCase = function (input) {
+	        return input.replace(/[A-Z]/g, function ($1) {
+	          return "_" + $1.toLowerCase();
+	        });
+	      };
+	      isEmpty = function (value) {
+	        var key;
+	        if (angular.isArray(value)) {
+	          return value.length === 0;
+	        } else if (angular.isObject(value)) {
+	          for (key in value) {
+	            if (value.hasOwnProperty(key)) {
+	              return false;
 	            }
-	            var length = array.length;
-	            for (var i = length - 1; i >= 0; i--) {
-	                if (array[i][column] == value[column]) {
-	                    return i;
+	          }
+	        }
+	        return true;
+	      };
+	      return {
+	        restrict: 'A',
+	        require: '?ngModel',
+	        priority: 1,
+	        link: function (scope, element, attr, ngModel) {
+	          var chosen, empty, initOrUpdate, match, options, origRender, startLoading, stopLoading, updateMessage, valuesExpr, viewWatch;
+	          scope.disabledValuesHistory = scope.disabledValuesHistory ? scope.disabledValuesHistory : [];
+	          element = $(element);
+	          element.addClass('localytics-chosen');
+	          options = scope.$eval(attr.chosen) || {};
+	          angular.forEach(attr, function (value, key) {
+	            if (indexOf.call(CHOSEN_OPTION_WHITELIST, key) >= 0) {
+	              return attr.$observe(key, function (value) {
+	                options[snakeCase(key)] = String(element.attr(attr.$attr[key])).slice(0, 2) === '{{' ? value : scope.$eval(value);
+	                return updateMessage();
+	              });
+	            }
+	          });
+	          startLoading = function () {
+	            return element.addClass('loading').attr('disabled', true).trigger('chosen:updated');
+	          };
+	          stopLoading = function () {
+	            element.removeClass('loading');
+	            if (angular.isDefined(attr.disabled)) {
+	              element.attr('disabled', attr.disabled);
+	            } else {
+	              element.attr('disabled', false);
+	            }
+	            return element.trigger('chosen:updated');
+	          };
+	          chosen = null;
+	          empty = false;
+	          initOrUpdate = function () {
+	            var defaultText;
+	            if (chosen) {
+	              return element.trigger('chosen:updated');
+	            } else {
+	              $timeout(function () {
+	                chosen = element.chosen(options).data('chosen');
+	              });
+	              if (angular.isObject(chosen)) {
+	                return defaultText = chosen.default_text;
+	              }
+	            }
+	          };
+	          updateMessage = function () {
+	            if (empty) {
+	              element.attr('data-placeholder', chosen.results_none_found).attr('disabled', true);
+	            } else {
+	              element.removeAttr('data-placeholder');
+	            }
+	            return element.trigger('chosen:updated');
+	          };
+	          if (ngModel) {
+	            origRender = ngModel.$render;
+	            ngModel.$render = function () {
+	              origRender();
+	              return initOrUpdate();
+	            };
+	            element.on('chosen:hiding_dropdown', function () {
+	              return scope.$apply(function () {
+	                return ngModel.$setTouched();
+	              });
+	            });
+	            if (attr.multiple) {
+	              viewWatch = function () {
+	                return ngModel.$viewValue;
+	              };
+	              scope.$watch(viewWatch, ngModel.$render, true);
+	            }
+	          } else {
+	            initOrUpdate();
+	          }
+	          attr.$observe('disabled', function () {
+	            return element.trigger('chosen:updated');
+	          });
+	          if (attr.ngOptions && ngModel) {
+	            match = attr.ngOptions.match(NG_OPTIONS_REGEXP);
+	            valuesExpr = match[7];
+	            scope.$watchCollection(valuesExpr, function (newVal, oldVal) {
+	              var timer;
+	              return timer = $timeout(function () {
+	                if (angular.isUndefined(newVal)) {
+	                  return startLoading();
+	                } else {
+	                  empty = isEmpty(newVal);
+	                  stopLoading();
+	                  return updateMessage();
 	                }
-	            }
-
-	            return -1;
-	        };
-	    });
+	              });
+	            });
+	            return scope.$on('$destroy', function (event) {
+	              if (typeof timer !== "undefined" && timer !== null) {
+	                return $timeout.cancel(timer);
+	              }
+	            });
+	          }
+	        }
+	      };
+	    }]);
+	  }).call(this);
 	};
 
 /***/ }
