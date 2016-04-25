@@ -48,6 +48,16 @@ module.exports = function(ngApp){
                    'room_id' : room_id
                }
             });
+         },
+         addUsersToRoom : function(users,room_id){
+             return $http({
+                method : 'POST',
+                url    : '/api/add_users_to_room',
+                data   : {
+                    'users' : users,
+                    'room_id' : room_id
+                }
+             });
          }
      }
   });

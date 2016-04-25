@@ -6,6 +6,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\Room;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Auth;
@@ -67,5 +68,28 @@ class AngularController extends Controller
         $room->users()->attach($this->user->id);
 
         return response()->json($room,200);
+    }
+
+    public function add_users_to_room(Request $request){
+        $users = array_filter($request->get('users',[]));
+        $room_id = $request->get('room_id',0);
+
+        $response  = [];
+
+        $room = Room::where('creator_id',$this->user->id)->where('id',$room_id)->first();
+        if($room){
+            foreach($users as $id){
+                $user = User::find($id);
+                if($user){
+                    $room->users()->attach($id);
+                    $response[] = [
+                        'id' => $user->id,
+                        'name' => $user->name
+                    ];
+                }
+            }
+        }
+
+        return response()->json($response,200);
     }
 }

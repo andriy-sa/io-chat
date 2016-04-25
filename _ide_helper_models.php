@@ -10,21 +10,6 @@
 
 namespace App\Models{
 /**
- * App\Models\Room
- *
- * @property integer $id
- * @property string $name
- * @property integer $creator_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Room[] $rooms
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereName($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereCreatorId($value)
- */
-	class Room extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
  * App\Models\User
  *
  * @property integer $id
@@ -44,6 +29,21 @@ namespace App\Models{
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereUpdatedAt($value)
  */
 	class User extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * App\Models\Room
+ *
+ * @property integer $id
+ * @property string $name
+ * @property integer $creator_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereName($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Room whereCreatorId($value)
+ */
+	class Room extends \Eloquent {}
 }
 
 namespace App\Models{

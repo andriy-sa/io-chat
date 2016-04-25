@@ -49,10 +49,10 @@
 
 	const ngApp = angular.module('ngApp', ['ui.router', 'btford.socket-io', 'localytics.directives']);
 	__webpack_require__(4)(ngApp);
-	__webpack_require__(6)(ngApp);
-	__webpack_require__(8)(ngApp);
-	__webpack_require__(11)(ngApp);
-	__webpack_require__(15)(ngApp);
+	__webpack_require__(7)(ngApp);
+	__webpack_require__(9)(ngApp);
+	__webpack_require__(12)(ngApp);
+	__webpack_require__(16)(ngApp);
 
 /***/ },
 /* 1 */
@@ -18359,7 +18359,7 @@
 
 	module.exports = function (ngApp) {
 	    __webpack_require__(5)(ngApp);
-	    __webpack_require__(19)(ngApp);
+	    __webpack_require__(6)(ngApp);
 	};
 
 /***/ },
@@ -18473,511 +18473,6 @@
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function (ngApp) {
-	    __webpack_require__(7)(ngApp);
-	};
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.filter('myDateFormat', function myDateFormat($filter) {
-	        return function (text, format) {
-	            var tempdate = new Date(text.replace(/-/g, "/"));
-	            return $filter('date')(tempdate, format);
-	        };
-	    });
-
-	    ngApp.filter('myIndexOf', function () {
-	        return function (array, value, column) {
-	            if (column == undefined) {
-	                column = 'id';
-	            }
-	            var length = array.length;
-	            for (var i = length - 1; i >= 0; i--) {
-	                if (array[i][column] == value[column]) {
-	                    return i;
-	                }
-	            }
-
-	            return -1;
-	        };
-	    });
-	};
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function (ngApp) {
-	    __webpack_require__(9)(ngApp);
-	    __webpack_require__(10)(ngApp);
-	};
-
-/***/ },
-/* 9 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
-	        //
-	        // For any unmatched url, redirect to /state1
-	        $urlRouterProvider.otherwise("/");
-	        $locationProvider.html5Mode({ enabled: true, requireBase: false });
-	        //
-	        // Now set up the states
-	        $stateProvider.state('app', {
-	            abstract: true,
-	            views: {
-	                "header": {
-	                    templateUrl: '/views/blocks/header.html',
-	                    controller: "headerCtrl"
-	                },
-	                "content": {}
-	            }
-	        }).state('app.home', {
-	            url: "/",
-	            data: { 'auth': true },
-	            views: {
-	                "content@": {
-	                    templateUrl: '/views/home.html',
-	                    controller: "mainCtrl"
-	                }
-	            }
-	        }).state('app.auth', {
-	            data: { 'guest': true },
-	            url: "/auth",
-	            views: {
-	                "content@": {
-	                    templateUrl: '/views/auth.html',
-	                    controller: "authCtrl"
-	                }
-	            }
-
-	        }).state('app.register', {
-	            data: { 'guest': true },
-	            url: "/register",
-	            views: {
-	                "content@": {
-	                    templateUrl: '/views/register.html',
-	                    controller: "authCtrl"
-	                }
-	            }
-
-	        });
-	    });
-	};
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.config(function ($httpProvider) {
-	        /* auth middleware */
-	        $httpProvider.interceptors.push(function ($q, $rootScope, $location, $injector) {
-	            return {
-	                responseError: function (response) {
-	                    if (response.status === 401) {
-	                        $injector.get("$state").go("app.auth");
-	                    }
-	                    if (response.status === 402) {
-	                        $injector.get("$state").go("app.home");
-	                    }
-	                    return $q.reject(response);
-	                }
-	            };
-	        });
-
-	        /* log middleware */
-	        $httpProvider.interceptors.push(function ($q, $rootScope, $location, $injector) {
-	            return {
-	                responseError: function (response) {
-	                    if (response.status === 400) {
-	                        $rootScope.log = response.data.type;
-	                        $rootScope.messages = response.data.messages;
-	                    }
-	                    return $q.reject(response);
-	                }
-	            };
-	        });
-	    });
-	    ngApp.run(function ($rootScope, $state, Auth, Chat) {
-	        $rootScope.$on("$stateChangeStart", function (event, toState) {
-	            if (toState.data && toState.data.auth) {
-	                //   console.log('auth detected');
-	                Chat.getUser();
-	            }
-	            if (toState.data && toState.data.guest) {
-	                //  console.log('guest detected');
-	                Auth.checkAuth();
-	            }
-	        });
-	    });
-	};
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function (ngApp) {
-	    __webpack_require__(12)(ngApp);
-	    __webpack_require__(13)(ngApp);
-	    __webpack_require__(14)(ngApp);
-	};
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.factory('Chat', function ($http) {
-	        return {
-	            getUser: function () {
-	                return $http({
-	                    method: 'GET',
-	                    'url': '/api/get_user'
-	                });
-	            },
-	            getMessages: function (room_id) {
-	                return $http({
-	                    method: 'GET',
-	                    url: '/api/get_messages',
-	                    params: { 'room_id': room_id }
-	                });
-	            },
-	            getRooms: function () {
-	                return $http({
-	                    method: 'GET',
-	                    url: '/api/get_rooms'
-	                });
-	            },
-	            findRoom: function (id) {
-	                return $http({
-	                    method: 'GET',
-	                    url: '/api/find_room',
-	                    params: { 'id': id }
-	                });
-	            },
-	            newRoom: function (name, user_id) {
-	                return $http({
-	                    method: 'POST',
-	                    url: '/api/new_room',
-	                    data: {
-	                        'name': name,
-	                        'creator_id': user_id
-	                    }
-	                });
-	            },
-	            newMessage: function (user_id, message, room_id) {
-	                return $http({
-	                    method: 'POST',
-	                    url: '/api/new_message',
-	                    data: {
-	                        'message': message,
-	                        'user_id': user_id,
-	                        'room_id': room_id
-	                    }
-	                });
-	            }
-	        };
-	    });
-	};
-
-/***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.factory('Auth', ['$http', function ($http) {
-	        return {
-	            login: function (user) {
-	                return $http({
-	                    method: 'POST',
-	                    url: '/login',
-	                    data: {
-	                        'email': user.email,
-	                        'password': user.password,
-	                        'remember': 1
-	                    }
-	                });
-	            },
-	            register: function (user) {
-	                return $http({
-	                    method: 'POST',
-	                    url: '/reg',
-	                    data: {
-	                        'name': user.name,
-	                        'email': user.email,
-	                        'password': user.password,
-	                        'password_confirmation': user.password_confirmation
-	                    }
-	                });
-	            },
-	            logout: function () {
-	                return $http({
-	                    method: 'GET',
-	                    url: '/logout'
-	                });
-	            },
-	            getMe: function () {
-	                return $http({
-	                    method: 'GET',
-	                    url: 'api/get_me'
-	                });
-	            },
-	            checkAuth: function () {
-	                return $http({
-	                    method: 'GET',
-	                    url: 'api/check-guest'
-	                });
-	            }
-	        };
-	    }]);
-	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.factory('Socket', ['socketFactory', function (socketFactory) {
-	        return socketFactory();
-	    }]);
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function (ngApp) {
-	    __webpack_require__(16)(ngApp);
-	    __webpack_require__(17)(ngApp);
-	    __webpack_require__(18)(ngApp);
-	};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.controller('mainCtrl', ['$scope', '$filter', '$timeout', 'Chat', 'Socket', function ($scope, $filter, $timeout, Chat, Socket) {
-	        $scope.user = [];
-	        $scope.room = {
-	            'id': 0
-	        };
-	        $scope.messages = [];
-	        $scope.rooms = [];
-
-	        $scope.newMsg = '';
-	        $scope.newRoom = [];
-
-	        $scope.all_users = [];
-	        $scope.users = [];
-	        $scope.chosenUsers = [];
-	        $scope.db_users = [];
-
-	        $scope.sendMsg = function (msg) {
-	            if (msg != null && msg.trim() != '') {
-	                var message = {
-	                    'name': $scope.user.name,
-	                    'message': msg,
-	                    'created_at': $filter('date')(new Date(), "yyyy-MM-dd HH:mm:ss")
-	                };
-
-	                Socket.emit('message', message);
-	                Chat.newMessage($scope.user.id, msg, $scope.room_id);
-	                $scope.messages.push(message);
-	                $scope.newMsg = '';
-	            }
-	        };
-
-	        $scope.getMessages = function () {
-	            Chat.getMessages($scope.room.id).success(function (data) {
-	                $scope.messages = data;
-	            });
-	        };
-
-	        $scope.getRooms = function () {
-	            Chat.getRooms().success(function (data) {
-	                $scope.rooms = data;
-	            });
-	        };
-
-	        $scope.addRoom = function (room) {
-	            if (!room.name || room.name.trim() == '') {
-	                var input = $('input#newRoom');
-	                input.css('border-color', 'red');
-	                $timeout(function () {
-	                    input.css('border-color', '#ccc');
-	                }, 3000);
-	                return false;
-	            }
-	            Chat.newRoom(room.name, $scope.user.id).success(function (data) {
-	                $scope.rooms.push(data);
-	                $scope.changeRoom(data.id);
-	                $('addRoom').modal('close');
-	            });
-	        };
-
-	        $scope.changeRoom = function (id) {
-	            if (id === $scope.room.id) {
-	                return false;
-	            }
-	            if (id === 0) {
-	                $scope.room = {
-	                    'id': 0
-	                };
-	                $scope.users = $scope.all_users;
-	                $scope.getMessages();
-	            } else {
-	                Chat.findRoom(id).success(function (data) {
-	                    $scope.room = data;
-	                    $scope.db_users = data.users;
-	                    $scope.users = [];
-	                    var index = -1;
-	                    angular.forEach($scope.db_users, function (item, key) {
-	                        index = $filter('myIndexOf')($scope.all_users, item);
-	                        // console.log($scope.all_users,item);
-	                        if (index != -1) {
-	                            $scope.users.push($scope.all_users[index]);
-	                        }
-	                    });
-	                    $scope.getMessages();
-	                }).error(function () {
-	                    console.log('room not found');
-	                });
-	            }
-	        };
-
-	        $scope.showAddUserModal = function () {
-	            $('#addUser').modal('show');
-	        };
-
-	        $scope.getUser = function () {
-	            Chat.getUser().success(function (data) {
-	                $scope.user = data.user;
-	                Socket.connect();
-	                Socket.emit('add_user', $scope.user);
-	                Socket.emit('request_users', {});
-	            });
-	        };
-	        $scope.getMessages();
-	        $scope.getRooms();
-	        $scope.getUser();
-
-	        /* socket listeners */
-
-	        Socket.on('users', function (data) {
-	            $scope.users = data;
-	            $scope.all_users = data;
-	        });
-
-	        Socket.on('add_user', function (data) {
-	            var add_index = $filter('myIndexOf')($scope.all_users, data);
-	            if (add_index === -1) {
-	                $scope.all_users.push(data);
-	                if ($scope.room.id === 0) {
-	                    $scope.users.push(data);
-	                    $scope.messages.push({
-	                        'message': data.name + ' has entered the chat!',
-	                        'name': ''
-	                    });
-	                } else {
-	                    var db_index = $filter('myIndexOf')($scope.db_users, data);
-	                    if (db_index != -1) {
-	                        $scope.users.push(data);
-	                        $scope.messages.push({
-	                            'message': data.name + ' has entered the chat!',
-	                            'name': ''
-	                        });
-	                    }
-	                }
-	            }
-	        });
-
-	        Socket.on('remove_user', function (data) {
-	            var delete_index = $filter('myIndexOf')($scope.all_users, data);
-	            if (delete_index != -1) {
-	                $scope.all_users.splice(delete_index, 1);
-	            }
-
-	            delete_index = $filter('myIndexOf')($scope.users, data);
-	            if (delete_index != -1) {
-	                $scope.users.splice(delete_index, 1);
-	                $scope.messages.push({
-	                    'message': data.name + ' has leave the chat!',
-	                    'name': ''
-	                });
-	            }
-	        });
-
-	        Socket.on('message', function (data) {
-	            $scope.messages.push(data);
-	        });
-
-	        $scope.$on('$stateChangeStart', function (event) {
-	            Socket.disconnect(true);
-	        });
-	    }]);
-	};
-
-/***/ },
-/* 17 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.controller('authCtrl', ['$scope', '$rootScope', '$state', 'Auth', function ($scope, $rootScope, $state, Auth) {
-	        $scope.user = [];
-	        $scope.reg = [];
-	        console.log('in auth controller');
-
-	        $scope.login = function (user) {
-	            Auth.login(user).success(function (data) {
-	                $rootScope.log = false;
-	                $state.go('app.home', {}, { reload: true });
-	            });
-	        };
-
-	        $scope.register = function (reg) {
-	            Auth.register(reg).success(function (data) {
-	                $rootScope.log = false;
-	                $state.go('app.home', {}, { reload: true });
-	            });
-	        };
-	    }]);
-	};
-
-/***/ },
-/* 18 */
-/***/ function(module, exports) {
-
-	module.exports = function (ngApp) {
-	    ngApp.controller('headerCtrl', ['$scope', '$rootScope', '$state', 'Auth', function ($scope, $rootScope, $state, Auth, Chat) {
-	        $scope.me = [];
-
-	        $scope.getMe = function () {
-	            Auth.getMe().success(function (data) {
-	                if (data.user) {
-	                    $scope.me = data.user;
-	                }
-	            });
-	        };
-	        $scope.logout = function () {
-	            Auth.logout().success(function () {
-	                $scope.me = [];
-	                $state.go('app.auth', {}, { reload: true });
-	            });
-	        };
-	        $scope.getMe();
-	    }]);
-	};
-
-/***/ },
-/* 19 */
 /***/ function(module, exports) {
 
 	module.exports = function (ngApp) {
@@ -19114,6 +18609,572 @@
 	      };
 	    }]);
 	  }).call(this);
+	};
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(8)(ngApp);
+	};
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.filter('myDateFormat', function myDateFormat($filter) {
+	        return function (text, format) {
+	            var tempdate = new Date(text.replace(/-/g, "/"));
+	            return $filter('date')(tempdate, format);
+	        };
+	    });
+
+	    ngApp.filter('myIndexOf', function () {
+	        return function (array, value, column) {
+	            if (column == undefined) {
+	                column = 'id';
+	            }
+	            var length = array.length;
+	            for (var i = length - 1; i >= 0; i--) {
+	                if (array[i][column] == value[column]) {
+	                    return i;
+	                }
+	            }
+
+	            return -1;
+	        };
+	    });
+	};
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(10)(ngApp);
+	    __webpack_require__(11)(ngApp);
+	};
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
+	        //
+	        // For any unmatched url, redirect to /state1
+	        $urlRouterProvider.otherwise("/");
+	        $locationProvider.html5Mode({ enabled: true, requireBase: false });
+	        //
+	        // Now set up the states
+	        $stateProvider.state('app', {
+	            abstract: true,
+	            views: {
+	                "header": {
+	                    templateUrl: '/views/blocks/header.html',
+	                    controller: "headerCtrl"
+	                },
+	                "content": {}
+	            }
+	        }).state('app.home', {
+	            url: "/",
+	            data: { 'auth': true },
+	            views: {
+	                "content@": {
+	                    templateUrl: '/views/home.html',
+	                    controller: "mainCtrl"
+	                }
+	            }
+	        }).state('app.auth', {
+	            data: { 'guest': true },
+	            url: "/auth",
+	            views: {
+	                "content@": {
+	                    templateUrl: '/views/auth.html',
+	                    controller: "authCtrl"
+	                }
+	            }
+
+	        }).state('app.register', {
+	            data: { 'guest': true },
+	            url: "/register",
+	            views: {
+	                "content@": {
+	                    templateUrl: '/views/register.html',
+	                    controller: "authCtrl"
+	                }
+	            }
+
+	        });
+	    });
+	};
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.config(function ($httpProvider) {
+	        /* auth middleware */
+	        $httpProvider.interceptors.push(function ($q, $rootScope, $location, $injector) {
+	            return {
+	                responseError: function (response) {
+	                    if (response.status === 401) {
+	                        $injector.get("$state").go("app.auth");
+	                    }
+	                    if (response.status === 402) {
+	                        $injector.get("$state").go("app.home");
+	                    }
+	                    return $q.reject(response);
+	                }
+	            };
+	        });
+
+	        /* log middleware */
+	        $httpProvider.interceptors.push(function ($q, $rootScope, $location, $injector) {
+	            return {
+	                responseError: function (response) {
+	                    if (response.status === 400) {
+	                        $rootScope.log = response.data.type;
+	                        $rootScope.messages = response.data.messages;
+	                    }
+	                    return $q.reject(response);
+	                }
+	            };
+	        });
+	    });
+	    ngApp.run(function ($rootScope, $state, Auth, Chat) {
+	        $rootScope.$on("$stateChangeStart", function (event, toState) {
+	            if (toState.data && toState.data.auth) {
+	                //   console.log('auth detected');
+	                Chat.getUser();
+	            }
+	            if (toState.data && toState.data.guest) {
+	                //  console.log('guest detected');
+	                Auth.checkAuth();
+	            }
+	        });
+	    });
+	};
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(13)(ngApp);
+	    __webpack_require__(14)(ngApp);
+	    __webpack_require__(15)(ngApp);
+	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.factory('Chat', function ($http) {
+	        return {
+	            getUser: function () {
+	                return $http({
+	                    method: 'GET',
+	                    'url': '/api/get_user'
+	                });
+	            },
+	            getMessages: function (room_id) {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/get_messages',
+	                    params: { 'room_id': room_id }
+	                });
+	            },
+	            getRooms: function () {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/get_rooms'
+	                });
+	            },
+	            findRoom: function (id) {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/api/find_room',
+	                    params: { 'id': id }
+	                });
+	            },
+	            newRoom: function (name, user_id) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/api/new_room',
+	                    data: {
+	                        'name': name,
+	                        'creator_id': user_id
+	                    }
+	                });
+	            },
+	            newMessage: function (user_id, message, room_id) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/api/new_message',
+	                    data: {
+	                        'message': message,
+	                        'user_id': user_id,
+	                        'room_id': room_id
+	                    }
+	                });
+	            },
+	            addUsersToRoom: function (users, room_id) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/api/add_users_to_room',
+	                    data: {
+	                        'users': users,
+	                        'room_id': room_id
+	                    }
+	                });
+	            }
+	        };
+	    });
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.factory('Auth', ['$http', function ($http) {
+	        return {
+	            login: function (user) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/login',
+	                    data: {
+	                        'email': user.email,
+	                        'password': user.password,
+	                        'remember': 1
+	                    }
+	                });
+	            },
+	            register: function (user) {
+	                return $http({
+	                    method: 'POST',
+	                    url: '/reg',
+	                    data: {
+	                        'name': user.name,
+	                        'email': user.email,
+	                        'password': user.password,
+	                        'password_confirmation': user.password_confirmation
+	                    }
+	                });
+	            },
+	            logout: function () {
+	                return $http({
+	                    method: 'GET',
+	                    url: '/logout'
+	                });
+	            },
+	            getMe: function () {
+	                return $http({
+	                    method: 'GET',
+	                    url: 'api/get_me'
+	                });
+	            },
+	            checkAuth: function () {
+	                return $http({
+	                    method: 'GET',
+	                    url: 'api/check-guest'
+	                });
+	            }
+	        };
+	    }]);
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.factory('Socket', ['socketFactory', function (socketFactory) {
+	        return socketFactory();
+	    }]);
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function (ngApp) {
+	    __webpack_require__(17)(ngApp);
+	    __webpack_require__(18)(ngApp);
+	    __webpack_require__(19)(ngApp);
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.controller('mainCtrl', ['$scope', '$rootScope', '$filter', '$timeout', 'Chat', 'Socket', function ($scope, $rootScope, $filter, $timeout, Chat, Socket) {
+	        $scope.user = [];
+	        $scope.room = {
+	            'id': 0
+	        };
+	        $scope.messages = [];
+	        $scope.rooms = [];
+
+	        $scope.newMsg = '';
+	        $scope.newRoom = [];
+
+	        $scope.all_users = [];
+	        $scope.users = [];
+	        $scope.chosenUsers = [];
+	        $scope.db_users = [];
+
+	        $scope.sendMsg = function (msg) {
+	            if (msg != null && msg.trim() != '') {
+	                var message = {
+	                    'name': $scope.user.name,
+	                    'message': msg,
+	                    'created_at': $filter('date')(new Date(), "yyyy-MM-dd HH:mm:ss")
+	                };
+
+	                Socket.emit('message', message);
+	                Chat.newMessage($scope.user.id, msg, $scope.room_id);
+	                $scope.messages.push(message);
+	                $scope.newMsg = '';
+	            }
+	        };
+
+	        $scope.getMessages = function () {
+	            Chat.getMessages($scope.room.id).success(function (data) {
+	                $scope.messages = data;
+	            });
+	        };
+
+	        $scope.getRooms = function () {
+	            Chat.getRooms().success(function (data) {
+	                $scope.rooms = data;
+	            });
+	        };
+
+	        $scope.addRoom = function (room) {
+	            if (!room.name || room.name.trim() == '') {
+	                var input = $('input#newRoom');
+	                input.css('border-color', 'red');
+	                $timeout(function () {
+	                    input.css('border-color', '#ccc');
+	                }, 3000);
+	                return false;
+	            }
+	            Chat.newRoom(room.name, $scope.user.id).success(function (data) {
+	                $scope.rooms.push(data);
+	                $scope.changeRoom(data.id);
+	                $('#addRoom').modal('hide');
+	            });
+	        };
+
+	        $scope.changeRoom = function (id) {
+	            if (id === $scope.room.id) {
+	                return false;
+	            }
+	            if (id === 0) {
+	                $scope.room = {
+	                    'id': 0
+	                };
+	                $scope.users = $scope.all_users;
+	                $scope.getMessages();
+	            } else {
+	                Chat.findRoom(id).success(function (data) {
+	                    $scope.room = data;
+	                    $scope.db_users = data.users;
+	                    $scope.users = [];
+	                    var index = -1;
+	                    angular.forEach($scope.db_users, function (item, key) {
+	                        index = $filter('myIndexOf')($scope.all_users, item);
+	                        // console.log($scope.all_users,item);
+	                        if (index != -1) {
+	                            $scope.users.push($scope.all_users[index]);
+	                        }
+	                    });
+	                    $scope.getMessages();
+	                }).error(function () {
+	                    console.log('room not found');
+	                });
+	            }
+	        };
+
+	        $scope.showAddUserModal = function () {
+	            var index = -1;
+	            $scope.chosenUsers = [];
+	            angular.forEach($scope.all_users, function (item, key) {
+	                index = $filter('myIndexOf')($scope.users, item);
+	                if (index == -1) {
+	                    $scope.chosenUsers.push(item);
+	                }
+	            });
+	            $('#addUser').modal('show');
+	        };
+
+	        $scope.addUsersToRoom = function (selected_users) {
+
+	            Chat.addUsersToRoom(selected_users, $scope.room.id).success(function (data) {
+	                console.log(data);
+	                angular.forEach(data, function (item, key) {
+	                    var index = $filter('myIndexOf')($scope.all_users, item);
+	                    console.log(index);
+	                    if (index != -1) {
+	                        console.log($scope.all_users[index]);
+	                        $scope.users.push($scope.all_users[index]);
+	                    }
+	                });
+	                $('#addUser').modal('hide');
+	            });
+	        };
+
+	        $scope.sendMsg = function (msg) {
+	            if (msg != null && msg.trim() != '') {
+	                var message = {
+	                    'name': $scope.user.name,
+	                    'message': msg
+	                };
+
+	                Socket.emit('message', message);
+
+	                $scope.messages.push(message);
+	                $scope.newMsg = '';
+	            }
+	        };
+
+	        $scope.getUser = function () {
+	            Chat.getUser().success(function (data) {
+	                $scope.user = data.user;
+	                Socket.connect();
+	                Socket.emit('add_user', $scope.user);
+	                Socket.emit('request_users', {});
+	            });
+	        };
+	        $scope.getMessages();
+	        $scope.getRooms();
+	        $scope.getUser();
+
+	        /* socket listeners */
+
+	        Socket.on('users', function (data) {
+	            $scope.users = data;
+	            $scope.all_users = data;
+	        });
+
+	        Socket.on('add_user', function (data) {
+	            $scope.$digest();
+	            var add_index = $filter('myIndexOf')($scope.all_users, data);
+	            if (add_index == -1) {
+	                console.log('add user to all');
+	                $scope.all_users.push(data);
+	                /*if($scope.room.id == 0){
+	                    $scope.users.push(data);
+	                    console.log('add user to home');
+	                    $scope.messages.push({
+	                        'message' : data.name+' has entered the chat!',
+	                        'name'    : ''
+	                    });
+	                } else {
+	                    var db_index = $filter('myIndexOf')($scope.db_users,data);
+	                    if(db_index != -1){
+	                        console.log('add user to some room');
+	                        $scope.users.push(data);
+	                        $scope.messages.push({
+	                            'message' : data.name+' has entered the chat!',
+	                            'name'    : ''
+	                        });
+	                    }
+	                }*/
+	            }
+	        });
+
+	        Socket.on('remove_user', function (data) {
+	            var delete_index = $filter('myIndexOf')($scope.all_users, data);
+	            console.log('Deleted user', data);
+
+	            console.log('all index', delete_index);
+
+	            if (delete_index != -1) {
+	                $scope.all_users.splice(delete_index, 1);
+	            }
+	            var all_users = $scope.all_users;
+	            console.log('all', all_users);
+
+	            delete_index = $filter('myIndexOf')($scope.users, data);
+	            console.log('users index', delete_index);
+	            if (delete_index != -1) {
+	                $scope.users.splice(delete_index, 1);
+	                $scope.messages.push({
+	                    'message': data.name + ' has leave the chat!',
+	                    'name': ''
+	                });
+	            }
+	            var users = $scope.users;
+	            console.log('users', users);
+	        });
+
+	        Socket.on('message', function (data) {
+	            $scope.messages.push(data);
+	        });
+
+	        $scope.$on('$stateChangeStart', function (event) {
+	            Socket.disconnect(true);
+	        });
+	    }]);
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.controller('authCtrl', ['$scope', '$rootScope', '$state', 'Auth', function ($scope, $rootScope, $state, Auth) {
+	        $scope.user = [];
+	        $scope.reg = [];
+	        console.log('in auth controller');
+
+	        $scope.login = function (user) {
+	            Auth.login(user).success(function (data) {
+	                $rootScope.log = false;
+	                $state.go('app.home', {}, { reload: true });
+	            });
+	        };
+
+	        $scope.register = function (reg) {
+	            Auth.register(reg).success(function (data) {
+	                $rootScope.log = false;
+	                $state.go('app.home', {}, { reload: true });
+	            });
+	        };
+	    }]);
+	};
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
+
+	module.exports = function (ngApp) {
+	    ngApp.controller('headerCtrl', ['$scope', '$rootScope', '$state', 'Auth', function ($scope, $rootScope, $state, Auth, Chat) {
+	        $scope.me = [];
+
+	        $scope.getMe = function () {
+	            Auth.getMe().success(function (data) {
+	                if (data.user) {
+	                    $scope.me = data.user;
+	                }
+	            });
+	        };
+	        $scope.logout = function () {
+	            Auth.logout().success(function () {
+	                $scope.me = [];
+	                $state.go('app.auth', {}, { reload: true });
+	            });
+	        };
+	        $scope.getMe();
+	    }]);
 	};
 
 /***/ }

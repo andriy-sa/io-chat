@@ -9,10 +9,10 @@
                 <div class="form-group">
                     <select chosen multiple
                             ng-model="selected_users"
-                            ng-options="u.id as u.name for u in all_users">
+                            ng-options="u.id as u.name for u in chosenUsers">
                     </select>
                 </div>
-                <button class="btn btn-success">Add</button>
+                <button ng-click="addUsersToRoom(selected_users)" class="btn btn-success">Add</button>
             </div>
         </div>
     </div>

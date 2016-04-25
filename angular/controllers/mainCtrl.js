@@ -1,6 +1,6 @@
 module.exports = function(ngApp) {
-    ngApp.controller('mainCtrl',['$scope','$filter','$timeout','Chat','Socket',
-        function ($scope,$filter,$timeout,Chat,Socket) {
+    ngApp.controller('mainCtrl',['$scope','$rootScope','$filter','$timeout','Chat','Socket',
+        function ($scope,$rootScope,$filter,$timeout,Chat,Socket) {
         $scope.user = [];
         $scope.room  = {
             'id' : 0
@@ -58,7 +58,7 @@ module.exports = function(ngApp) {
                 .success(function(data){
                    $scope.rooms.push(data);
                    $scope.changeRoom(data.id);
-                   $('addRoom').modal('close');
+                   $('#addRoom').modal('hide');
                 });
         };
 
@@ -95,13 +95,33 @@ module.exports = function(ngApp) {
         };
 
         $scope.showAddUserModal = function(){
+          var index = -1;
+          $scope.chosenUsers = [];
+          angular.forEach($scope.all_users,function(item,key){
+              index = $filter('myIndexOf')($scope.users,item);
+              if(index == -1){
+                  $scope.chosenUsers.push(item);
+              }
+          });
           $('#addUser').modal('show');
         };
 
-        $scope.users = {};
-        $scope.messages = [];
+        $scope.addUsersToRoom = function(selected_users){
 
-        $scope.newMsg = '';
+            Chat.addUsersToRoom(selected_users,$scope.room.id)
+                .success(function(data){
+                    console.log(data);
+                   angular.forEach(data,function(item,key){
+                      var index = $filter('myIndexOf')($scope.all_users,item);
+                      console.log(index);
+                      if(index != -1){
+                          console.log($scope.all_users[index]);
+                          $scope.users.push($scope.all_users[index]);
+                      }
+                   });
+                    $('#addUser').modal('hide')
+                });
+        };
 
         $scope.sendMsg = function(msg){
             if(msg != null && msg.trim() != ''){
@@ -116,8 +136,6 @@ module.exports = function(ngApp) {
                 $scope.newMsg = '';
             }
         };
-
-        console.log('in chat controller');
 
         $scope.getUser = function(){
             Chat.getUser()
@@ -140,11 +158,14 @@ module.exports = function(ngApp) {
         });
 
         Socket.on('add_user',function(data){
+            $scope.$digest();
             var add_index = $filter('myIndexOf')($scope.all_users,data);
-            if(add_index === -1){
+            if(add_index == -1){
+                console.log('add user to all');
                 $scope.all_users.push(data);
-                if($scope.room.id === 0){
+                /*if($scope.room.id == 0){
                     $scope.users.push(data);
+                    console.log('add user to home');
                     $scope.messages.push({
                         'message' : data.name+' has entered the chat!',
                         'name'    : ''
@@ -152,13 +173,14 @@ module.exports = function(ngApp) {
                 } else {
                     var db_index = $filter('myIndexOf')($scope.db_users,data);
                     if(db_index != -1){
+                        console.log('add user to some room');
                         $scope.users.push(data);
                         $scope.messages.push({
                             'message' : data.name+' has entered the chat!',
                             'name'    : ''
                         });
                     }
-                }
+                }*/
 
             }
 
@@ -166,11 +188,18 @@ module.exports = function(ngApp) {
 
         Socket.on('remove_user',function(data){
             var delete_index = $filter('myIndexOf')($scope.all_users,data);
+            console.log('Deleted user',data);
+
+            console.log('all index',delete_index);
+
             if(delete_index != -1){
                 $scope.all_users.splice(delete_index,1);
             }
+            var all_users = $scope.all_users;
+            console.log('all',all_users);
 
             delete_index = $filter('myIndexOf')($scope.users,data);
+            console.log('users index',delete_index);
             if(delete_index != -1){
                 $scope.users.splice(delete_index,1);
                 $scope.messages.push({
@@ -178,6 +207,8 @@ module.exports = function(ngApp) {
                     'name'    : ''
                 });
             }
+            var users = $scope.users;
+            console.log('users',users);
         });
 
         Socket.on('message',function(data){

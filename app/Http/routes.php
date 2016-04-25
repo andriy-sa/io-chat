@@ -32,6 +32,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('get_rooms','AngularController@get_rooms');
         Route::get('find_room','AngularController@find_room');
         Route::post('new_room','AngularController@new_room');
+        Route::post('add_users_to_room','AngularController@add_users_to_room');
     });
     Route::get('api/check-guest',['middleware' => 'guest','uses' => function(){
         return response('success',200);
